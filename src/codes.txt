@@ -1,0 +1,8 @@
+OFF - Protocol=NEC Address=0x0, Command=0x58, Raw-Data=0xA758FF00, 32 bits, LSB first, Gap=1986250us, Duration=67750us
+SLEEP - Protocol=NEC Address=0x0, Command=0x4C, Raw-Data=0xB34CFF00, 32 bits, LSB first, Gap=3276750us, Duration=67700us
+SUPPLY - Protocol=NEC Address=0x0, Command=0xA, Raw-Data=0xF50AFF00, 32 bits, LSB first, Gap=3276750us, Duration=67700us
+EXTRACT - Protocol=NEC Address=0x0, Command=0x19, Raw-Data=0xE619FF00, 32 bits, LSB first, Gap=3276750us, Duration=67750us
+RECOVERY - Protocol=NEC Address=0x0, Command=0x11, Raw-Data=0xEE11FF00, 32 bits, LSB first, Gap=1334750us, Duration=67600us
+SLOW - Protocol=NEC Address=0x0, Command=0x5, Raw-Data=0xFA05FF00, 32 bits, LSB first, Gap=3276750us, Duration=67700us
+MID - Protocol=NEC Address=0x0, Command=0x1E, Raw-Data=0xE11EFF00, 32 bits, LSB first, Gap=2310850us, Duration=67650us
+FAST - Protocol=NEC Address=0x0, Command=0x1B, Raw-Data=0xE41BFF00, 32 bits, LSB first, Gap=3276750us, Duration=67750us
