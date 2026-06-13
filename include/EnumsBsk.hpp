@@ -6,9 +6,6 @@
 namespace bsk
 {
 
-//---------------------------------------------------------
-// Enums
-//---------------------------------------------------------
 enum Delay : uint16_t
 {
   SHORT = 10,
@@ -47,7 +44,8 @@ enum Commands : uint8_t
   BSK_RECOVERY,
   BSK_SPEED_SLOW,
   BSK_SPEED_MID,
-  BSK_SPEED_FAST
+  BSK_SPEED_FAST,
+  BSK_NONE
 };
 
 }

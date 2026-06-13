@@ -13,6 +13,7 @@ Connection: close
 const char PAGE[] = R"rawliteral(
 <html>
 <body>
+<p>Old ssid/password : %SSID% / %PASSWORD%</p>
 <form action="/save">
 <label>SSID</label>
 <input name="ssid">

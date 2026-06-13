@@ -1,8 +1,8 @@
 #ifndef WEB_CONNECTION_HPP
 #define WEB_CONNECTION_HPP
 
-#define CONFIGURATION_MODE_PIN 3
-#define TCP_PORT 80
+#define CONFIGURATION_MODE_PIN 2
+#define TCP_PORT 5000
 #define UDP_PORT 12345
 
 #include <Arduino.h>
@@ -17,19 +17,18 @@
 
 namespace bsk
 {
-
 //---------------------------------------------------------
-// class WebConnection
+// class BskControl
 //---------------------------------------------------------
 
-class WebConnection
+class BskControl
 {
 public:
     // Constructor
-    WebConnection(WiFiServer &server, WiFiUDP& udp);
+    BskControl(WiFiServer &server, WiFiUDP &udp);
 
     // Destructor
-    ~WebConnection() = default;
+    ~BskControl() = default;
 
     // Init function called from main setup
     void init();
@@ -40,9 +39,6 @@ public:
 private:
     // Connect to the wifi station
     void connect();
-
-    // Disconnect from wifi station
-    void disconnect();
 
     // Handle udp discovery
     void handleDiscovery();
@@ -58,11 +54,12 @@ private:
     WiFiServer *m_server;
     WiFiUDP *m_udp;
     //TimeProvider m_timeProvider;
-    RepeatitiveTimer<WebConnection> m_timer;
 
     bool m_configurationMode{false};
-    bool m_inSleepState{false};
-
+    bool m_firstLoopDone{false};
+    
+    bool m_connected{false};
+    Timer m_reconnectTimer;
     String m_ssid;
     String m_password;
 

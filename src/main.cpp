@@ -2,7 +2,7 @@
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 
-#include "WebConnection.hpp"
+#include "BskControl.hpp"
 
 #define SERIAL_BAUD 115200
 
@@ -12,7 +12,7 @@
 
 WiFiServer server(TCP_PORT);
 WiFiUDP udp;
-bsk::WebConnection webCon(server, udp);
+bsk::BskControl webCon(server, udp);
 
 //---------------------------------------------------------
 // Constants
@@ -24,8 +24,6 @@ bsk::WebConnection webCon(server, udp);
 
 void setup()
 {
-  pinMode(CONFIGURATION_MODE_PIN, INPUT_PULLUP);
-
   //Serial.begin(SERIAL_BAUD);
   webCon.init();
 }

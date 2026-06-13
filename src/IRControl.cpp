@@ -5,18 +5,18 @@
 namespace bsk
 {
 
-IRControl::IRControl()
-{
-}
+//---------------------------------------------------------
+// Functions
+//---------------------------------------------------------
 
 void IRControl::init()
 {
     IrSender.begin(IR_LED_PIN);
 }
-
+//---------------------------------------------------------
 void IRControl::sendCommand(Commands cmd)
 {
-    uint16_t code = 0;
+    uint16_t code = 0x0;
 
     switch (cmd)
     {
@@ -43,6 +43,9 @@ void IRControl::sendCommand(Commands cmd)
         break;
     case Commands::BSK_SPEED_FAST:
         code = 0x1B;
+        break;
+    case Commands::BSK_NONE:
+        code = 0x1; // TODO: looks like humidity setting
         break;
     }
 

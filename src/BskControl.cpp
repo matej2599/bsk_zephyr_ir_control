@@ -1,8 +1,8 @@
 #include "WebConnection.hpp"
 #include "ServicePage.hpp"
 
-#define DEVICE_ID "BSK_DEVICE_LIVINGROOM"
-// #define DEVICE_ID "BSK_DEVICE_OFFICE"
+//#define DEVICE_ID "BSK_DEVICE_LIVINGROOM"
+#define DEVICE_ID "BSK_DEVICE_OFFICE"
 // #define DEVICE_ID "BSK_DEVICE_BEDROOM"
 
 #include "Config.hpp"
@@ -18,13 +18,16 @@ namespace
 // Constants
 //---------------------------------------------------------
 
-constexpr uint8_t NIGHT_STARTS_AT = 23;
-constexpr uint8_t NIGHT_ENDS_AT = 5;
+//constexpr uint8_t NIGHT_STARTS_AT = 23;
+//constexpr uint8_t NIGHT_ENDS_AT = 5;
 
 constexpr const char* AP_SSID = "BSK_ESP_IR1"; // soft ap ssid
 constexpr const char* AP_PASS = "bsk12345";
 
 constexpr unsigned long AP_MODE_CHECK_MS = 10000;
+constexpr unsigned long STA_MODE_CHECK_MS = 10000;
+constexpr unsigned long MILLISECONDS_IN_SECOND = 1000;
+constexpr unsigned long STA_MODE_RECONNECT_MIN = 60 * MILLISECONDS_IN_SECOND;
 
 //---------------------------------------------------------
 // Global variables
@@ -44,7 +47,7 @@ std::map<String, Commands> commandMap = {
 // Functions
 //---------------------------------------------------------
 
-String urlDecode(String input)
+String decode(String input)
 {
     String decoded = "";
     
@@ -72,47 +75,48 @@ String urlDecode(String input)
     return decoded;
 }
 
-}
+} // anonymous namespace
 
-WebConnection::WebConnection(WiFiServer &server, WiFiUDP &udp)
+BskControl::BskControl(WiFiServer &server, WiFiUDP &udp)
+  : m_reconnectTimer(1)
 {
   m_server = &server;
   m_udp = &udp;
 }
 //---------------------------------------------------------
-void WebConnection::init()
+void BskControl::init()
 {
-  connect();
-  digitalWrite(IR_LED_PIN, LOW);
-  m_irControl.init();
+  cfg::begin();
   m_server->begin();
   m_udp->begin(UDP_PORT);
 }
 //---------------------------------------------------------
-void WebConnection::connect()
+void BskControl::connect()
 {
-  cfg::begin();
-
-  if (!cfg::loadCredentials(m_ssid, m_password))
+  if (m_ssid.isEmpty() && !cfg::loadCredentials(m_ssid, m_password))
   {
     m_configurationMode = true;
   }
-  else
+  else if (!m_firstLoopDone)
   {
+    pinMode(CONFIGURATION_MODE_PIN, INPUT_PULLUP);
+
     Timer timer(1);
-    while (!timer.isExpired(1, AP_MODE_CHECK_MS))
+    while (!timer.isExpired(0, AP_MODE_CHECK_MS))
     {
       if (digitalRead(CONFIGURATION_MODE_PIN) == LOW)
       {
         m_configurationMode = true;
         break;
       }
+
+      delay(Delay::NORMAL);
     }
   }
 
   if (m_configurationMode)
   {
-    IPAddress localIp(192, 168, 1, 0);
+    IPAddress localIp(192, 168, 1, 1);
     IPAddress gateway(192, 168, 1, 1);
     IPAddress subnet(255, 255, 255, 0);
 
@@ -122,36 +126,50 @@ void WebConnection::connect()
   else
   {
     WiFi.mode(WIFI_STA);
-    WiFi.begin(m_ssid.c_str(), m_password.c_str());
-    WiFi.setAutoReconnect(true);
+    WiFi.begin(m_ssid, m_password);
     WiFi.setSleepMode(WIFI_LIGHT_SLEEP, 3);
 
-    while (WiFi.status() != WL_CONNECTED)
+    Timer timer(1);
+    while (!timer.isExpired(0, STA_MODE_CHECK_MS))
     {
-      delay(Delay::LONG);
+      if (WiFi.status() == WL_CONNECTED)
+      {
+        m_connected = true;
+        break;
+      }
+
+      delay(Delay::IDLE);
+    }
+
+    if(!m_connected)
+    {
+      WiFi.disconnect();
     }
   }
 }
 //---------------------------------------------------------
-void WebConnection::disconnect()
+void BskControl::update()
 {
-  WiFi.setSleepMode(WIFI_MODEM_SLEEP);
-  WiFi.disconnect(true);
-  WiFi.mode(WiFiMode::WIFI_OFF);
-  WiFi.forceSleepBegin();
+  if (!m_firstLoopDone)
+  {
+    m_irControl.init();
+    m_irControl.sendCommand(bsk::Commands::BSK_NONE);
+    connect();
+    m_firstLoopDone = true;
+  }
 
-  delay(Delay::SHORT);
-}
-//---------------------------------------------------------
-void WebConnection::update()
-{
+  if (!m_connected && m_reconnectTimer.isExpired(0, STA_MODE_RECONNECT_MIN))
+  {
+    connect();
+    m_reconnectTimer.reset(1);
+  }
+
   if (m_configurationMode)
   {
     servicePage();
   }
-  else if (!m_inSleepState)
+  else
   {
-    m_timer.tick();
     webUpdate();
     handleDiscovery();
   }
@@ -159,7 +177,7 @@ void WebConnection::update()
   delay(Delay::NORMAL);
 }
 //---------------------------------------------------------
-void WebConnection::webUpdate()
+void BskControl::webUpdate()
 {
   WiFiClient client = m_server->accept();
   if (client)
@@ -195,7 +213,7 @@ void WebConnection::webUpdate()
   }
 }
 //---------------------------------------------------------
-void WebConnection::servicePage()
+void BskControl::servicePage()
 {
   WiFiClient client = m_server->accept();
   if (!client)
@@ -223,8 +241,8 @@ void WebConnection::servicePage()
     String password =
         request.substring(passPos + 10, bodyEnd);
 
-    ssid = urlDecode(ssid);
-    password = urlDecode(password);
+    ssid = decode(ssid);
+    password = decode(password);
     ssid.trim();
     password.trim();
 
@@ -245,14 +263,18 @@ void WebConnection::servicePage()
     return;
   }
 
+  String page = PAGE;
+  page.replace("%SSID%", m_ssid);
+  page.replace("%PASSWORD%", m_password);
+
   client.println(HEADER);
-  client.print(PAGE);
+  client.print(page);
   client.println("");
   client.flush();
   client.stop();
 }
 //---------------------------------------------------------
-void WebConnection::handleDiscovery()
+void BskControl::handleDiscovery()
 {
   int packetSize = m_udp->parsePacket();
 
