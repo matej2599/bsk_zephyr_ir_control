@@ -1,5 +1,5 @@
-#ifndef WEB_CONNECTION_HPP
-#define WEB_CONNECTION_HPP
+#ifndef BSK_CONTROL_HPP
+#define BSK_CONTROL_HPP
 
 #define CONFIGURATION_MODE_PIN 2
 #define TCP_PORT 5000
@@ -13,7 +13,6 @@
 #include "EnumsBsk.hpp"
 
 #include "Timer.hpp"
-#include "TimeProvider.h"
 
 namespace bsk
 {
@@ -50,14 +49,12 @@ private:
     void servicePage();
 
 private:
-    // Web connection variables
     WiFiServer *m_server;
     WiFiUDP *m_udp;
-    //TimeProvider m_timeProvider;
 
     bool m_configurationMode{false};
     bool m_firstLoopDone{false};
-    
+
     bool m_connected{false};
     Timer m_reconnectTimer;
     String m_ssid;

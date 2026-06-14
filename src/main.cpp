@@ -1,6 +1,4 @@
 #include <Arduino.h>
-#include <ESP8266WiFi.h>
-#include <WiFiUdp.h>
 
 #include "BskControl.hpp"
 
@@ -12,7 +10,7 @@
 
 WiFiServer server(TCP_PORT);
 WiFiUDP udp;
-bsk::BskControl webCon(server, udp);
+bsk::BskControl bskCtrl(server, udp);
 
 //---------------------------------------------------------
 // Constants
@@ -25,7 +23,7 @@ bsk::BskControl webCon(server, udp);
 void setup()
 {
   //Serial.begin(SERIAL_BAUD);
-  webCon.init();
+  bskCtrl.init();
 }
 
 //---------------------------------------------------------
@@ -34,5 +32,5 @@ void setup()
 
 void loop()
 {
-  webCon.update();
+  bskCtrl.update();
 }

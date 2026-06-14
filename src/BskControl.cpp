@@ -18,16 +18,12 @@ namespace
 // Constants
 //---------------------------------------------------------
 
-//constexpr uint8_t NIGHT_STARTS_AT = 23;
-//constexpr uint8_t NIGHT_ENDS_AT = 5;
-
 constexpr const char* AP_SSID = "BSK_ESP_IR1"; // soft ap ssid
 constexpr const char* AP_PASS = "bsk12345";
 
 constexpr unsigned long AP_MODE_CHECK_MS = 10000;
 constexpr unsigned long STA_MODE_CHECK_MS = 10000;
-constexpr unsigned long MILLISECONDS_IN_SECOND = 1000;
-constexpr unsigned long STA_MODE_RECONNECT_MIN = 60 * MILLISECONDS_IN_SECOND;
+constexpr unsigned long STA_MODE_RECONNECT_MIN = 60000;
 
 //---------------------------------------------------------
 // Global variables
@@ -161,7 +157,7 @@ void BskControl::update()
   if (!m_connected && m_reconnectTimer.isExpired(0, STA_MODE_RECONNECT_MIN))
   {
     connect();
-    m_reconnectTimer.reset(1);
+    m_reconnectTimer.reset(0);
   }
 
   if (m_configurationMode)
