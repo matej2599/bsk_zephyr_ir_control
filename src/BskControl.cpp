@@ -1,4 +1,4 @@
-#include "WebConnection.hpp"
+#include "BskControl.hpp"
 #include "ServicePage.hpp"
 
 //#define DEVICE_ID "BSK_DEVICE_LIVINGROOM"
