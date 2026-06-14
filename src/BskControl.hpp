@@ -50,13 +50,14 @@ private:
 
 private:
     WiFiServer *m_server;
-    WiFiUDP *m_udp;
+    WiFiUDP    *m_udp;
 
     bool m_configurationMode{false};
+    bool m_connected{false};
     bool m_firstLoopDone{false};
 
-    bool m_connected{false};
     Timer m_reconnectTimer;
+
     String m_ssid;
     String m_password;
 

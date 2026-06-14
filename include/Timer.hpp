@@ -6,176 +6,176 @@
 class Timer
 {
 public:
-    Timer(int events)
+  Timer(size_t events)
       : m_events(events)
-    {
-      m_lastUpdateTime = new unsigned long[m_events];
+  {
+    m_lastUpdateTime = new unsigned long[m_events];
 
-        for (int i = 0; i < m_events; i++)
-      {
-        m_lastUpdateTime[i] = millis();
-      }
+    for (size_t i = 0; i < m_events; i++)
+    {
+      m_lastUpdateTime[i] = millis();
     }
+  }
 
-    ~Timer()
+  ~Timer()
+  {
+    delete[] m_lastUpdateTime;
+  }
+
+  bool timerCheck(size_t event, const unsigned long& milliseconds)
+  {
+    if (event > m_events)
     {
-      delete [] m_lastUpdateTime;
-    }
-
-    bool timerCheck(uint8_t event, const unsigned long& milliseconds)
-    {
-      if (event > m_events)
-      {
-        return false;
-      }
-
-      unsigned long currentTime = millis();
-
-      if (currentTime >= (m_lastUpdateTime[event] + milliseconds))
-      {
-        m_lastUpdateTime[event] = currentTime;
-        return true;
-      }
-
       return false;
     }
 
-    bool isExpired(uint8_t event, const unsigned long& milliseconds)
+    unsigned long currentTime = millis();
+
+    if (currentTime >= (m_lastUpdateTime[event] + milliseconds))
     {
-      if (event > m_events)
-      {
-        return false;
-      }
+      m_lastUpdateTime[event] = currentTime;
+      return true;
+    }
 
-      unsigned long currentTime = millis();
+    return false;
+  }
 
-      if (currentTime >= (m_lastUpdateTime[event] + milliseconds))
-      {
-        return true;
-      }
-
+  bool isExpired(size_t event, const unsigned long& milliseconds)
+  {
+    if (event > m_events)
+    {
       return false;
     }
 
-    void reset(uint8_t event)
-    {
-      if (event > m_events)
-      {
-        return;
-      }
+    unsigned long currentTime = millis();
 
-      m_lastUpdateTime[event] = millis();
+    if (currentTime >= (m_lastUpdateTime[event] + milliseconds))
+    {
+      return true;
     }
+
+    return false;
+  }
+
+  void reset(size_t event)
+  {
+    if (event > m_events)
+    {
+      return;
+    }
+
+    m_lastUpdateTime[event] = millis();
+  }
 
 private:
-    int m_events;
-    unsigned long* m_lastUpdateTime = nullptr;
+  size_t m_events;
+  unsigned long* m_lastUpdateTime = nullptr;
 };
 
-template<typename TargetClassType>
+template <typename TargetClassType>
 class RepeatitiveTimer
 {
 public:
-    RepeatitiveTimer()
-    {
-    }
+  RepeatitiveTimer()
+  {
+  }
 
-    ~RepeatitiveTimer()
-    {
-      delete [] m_tasks;
-    }
+  ~RepeatitiveTimer()
+  {
+    delete[] m_tasks;
+  }
 
-    template<typename T>
-    void addFunction(T* obj, void (T::*method)(), unsigned long milliseconds)
-    {
-      resize(m_taskCounter + 1);
+  template <typename T>
+  void addFunction(T* obj, void (T::*method)(), unsigned long milliseconds)
+  {
+    resize(m_taskCounter + 1);
 
-      m_tasks[m_taskCounter - 1].method = reinterpret_cast<void (RepeatitiveTimer::*)()>(method);
-      m_tasks[m_taskCounter - 1].obj = obj;
-      m_tasks[m_taskCounter - 1].timeout = milliseconds;
-      m_tasks[m_taskCounter - 1].lastUpdateTime = millis();
-    }
+    m_tasks[m_taskCounter - 1].method = reinterpret_cast<void (RepeatitiveTimer::*)()>(method);
+    m_tasks[m_taskCounter - 1].obj = obj;
+    m_tasks[m_taskCounter - 1].timeout = milliseconds;
+    m_tasks[m_taskCounter - 1].lastUpdateTime = millis();
+  }
 
-    template<typename T>
-    void reset(void (T::*method)())
+  template <typename T>
+  void reset(void (T::*method)())
+  {
+    for (size_t i = 0; i < m_taskCounter; i++)
     {
-      for (auto i = 0; i < m_taskCounter; i++)
+      if (m_tasks[i].method == reinterpret_cast<void (RepeatitiveTimer::*)()>(method))
       {
-        if (m_tasks[i].method == reinterpret_cast<void (RepeatitiveTimer::*)()>(method))
+        m_tasks[i].lastUpdateTime = millis();
+      }
+    }
+  }
+
+  template <typename T>
+  void setTimeout(void (T::*method)(), unsigned long timeout)
+  {
+    for (size_t i = 0; i < m_taskCounter; i++)
+    {
+      if (m_tasks[i].method == reinterpret_cast<void (RepeatitiveTimer::*)()>(method))
+      {
+        if (timeout)
         {
-          m_tasks[i].lastUpdateTime = millis();
+          m_tasks[i].timeout = timeout;
         }
       }
     }
+  }
 
-    template<typename T>
-    void setTimeout(void (T::*method)(), unsigned long timeout)
+  void tick()
+  {
+    if (m_taskCounter < 1)
     {
-      for (auto i = 0; i < m_taskCounter; i++)
-      {
-        if (m_tasks[i].method == reinterpret_cast<void (RepeatitiveTimer::*)()>(method))
-        {
-          if (timeout)
-          {
-            m_tasks[i].timeout = timeout;
-          }
-        }
-      }
+      return;
     }
 
-    void tick()
-    {
-      if (m_taskCounter < 1)
-      {
-        return;
-      }
-      
-      unsigned long currentTime = millis();
+    unsigned long currentTime = millis();
 
-      for (int i = 0; i < m_taskCounter; i++)
+    for (size_t i = 0; i < m_taskCounter; i++)
+    {
+      if (currentTime >= (m_tasks[i].lastUpdateTime + m_tasks[i].lastUpdateTime))
       {
-        if (currentTime >= (m_tasks[i].lastUpdateTime + m_tasks[i].lastUpdateTime))
-        {
-          m_tasks[i].lastUpdateTime = currentTime;
-          m_tasks[i].update();
-        }
+        m_tasks[i].lastUpdateTime = currentTime;
+        m_tasks[i].update();
       }
     }
+  }
 
 private:
-    void resize(int size)
+  void resize(size_t size)
+  {
+    // TODO implement and use some container instead of array
+    Task* tempTasks = new Task[size];
+
+    for (size_t i = 0; i < m_taskCounter; ++i)
     {
-        // TODO implement and use some container instead of array
-        Task* tempTasks = new Task[size];
-
-        for (int i = 0; i < m_taskCounter; ++i)
-        {
-            tempTasks[i] = m_tasks[i];
-        }
-
-        delete[] m_tasks;
-
-        m_tasks = tempTasks;
-        m_taskCounter = size;
+      tempTasks[i] = m_tasks[i];
     }
 
+    delete[] m_tasks;
+
+    m_tasks = tempTasks;
+    m_taskCounter = size;
+  }
+
 private:
-    struct Task
+  struct Task
+  {
+    void (RepeatitiveTimer::*method)();
+    void* obj;
+    unsigned long timeout = 0;
+    unsigned long lastUpdateTime = 0;
+
+    void update()
     {
-        void (RepeatitiveTimer::*method)();
-        void* obj;
-        unsigned long timeout = 0;
-        unsigned long lastUpdateTime = 0;
+      auto exec = reinterpret_cast<void (TargetClassType::*)()>(method);
+      (static_cast<TargetClassType *>(obj)->*exec)();
+    }
+  };
 
-        void update()
-        {
-          auto exec = reinterpret_cast<void (TargetClassType::*)()>(method);
-          (static_cast<TargetClassType*>(obj)->*exec)();
-        }
-    };
-
-    Task* m_tasks = nullptr;
-    int m_taskCounter = 0;
+  Task* m_tasks = nullptr;
+  size_t m_taskCounter = 0;
 };
 
 #endif
