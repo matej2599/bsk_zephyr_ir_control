@@ -134,7 +134,7 @@ public:
 
     for (size_t i = 0; i < m_taskCounter; i++)
     {
-      if (currentTime >= (m_tasks[i].lastUpdateTime + m_tasks[i].lastUpdateTime))
+      if (currentTime >= (m_tasks[i].lastUpdateTime + m_tasks[i].timeout))
       {
         m_tasks[i].lastUpdateTime = currentTime;
         m_tasks[i].update();
