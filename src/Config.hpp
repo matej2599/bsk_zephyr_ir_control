@@ -18,10 +18,10 @@ namespace cfg
 
   void begin()
   {
-    !LittleFS.begin();
+    LittleFS.begin();
   }
 
-  bool saveCredetials(String ssid, String pass)
+  bool saveCredetials(const String& ssid, const String& password)
   {
     bool result = false;
     File file = LittleFS.open(CREDENTIALS_FILE, "w");
@@ -30,14 +30,14 @@ namespace cfg
       return result;
 
     result = ((file.println(ssid) > 0) &&
-              (file.println(pass) > 0));
+              (file.println(password) > 0));
 
     file.flush();
     file.close();
     return result;
   }
   //---------------------------------------------------------
-  bool loadCredentials(String &ssid, String &pass)
+  bool loadCredentials(String& ssid, String& password)
   {
     if (!LittleFS.exists(CREDENTIALS_FILE))
       return false;
@@ -48,10 +48,10 @@ namespace cfg
       return false;
 
     ssid = file.readStringUntil('\n');
-    pass = file.readStringUntil('\n');
+    password = file.readStringUntil('\n');
 
     ssid.trim();
-    pass.trim();
+    password.trim();
 
     file.close();
 

@@ -18,8 +18,8 @@ namespace
 // Constants
 //---------------------------------------------------------
 
-constexpr const char* AP_SSID = "BSK_ESP_IR1"; // soft ap ssid
-constexpr const char* AP_PASS = "bsk12345";
+constexpr const char* AP_SSID     = "BSK_ESP_IR1"; // AP ssid
+constexpr const char* AP_PASSWORD = "bsk12345";    // AP password
 
 constexpr unsigned long AP_MODE_CHECK_MS = 10000;
 constexpr unsigned long STA_MODE_CHECK_MS = 10000;
@@ -29,15 +29,17 @@ constexpr unsigned long STA_MODE_RECONNECT_MIN = 60000;
 // Global variables
 //---------------------------------------------------------
 
-std::map<String, Commands> commandMap = {
-    {"BSK_TURN_ON_OFF", Commands::BSK_TURN_ON_OFF},
-    {"BSK_SLEEP", Commands::BSK_SLEEP},
-    {"BSK_MODE_SUPPLY", Commands::BSK_SUPPLY},
-    {"BSK_MODE_EXTRACT", Commands::BSK_EXTRACT},
-    {"BSK_RECOVERY", Commands::BSK_RECOVERY},
-    {"BSK_SPEED_SLOW", Commands::BSK_SPEED_SLOW},
-    {"BSK_SPEED_MID", Commands::BSK_SPEED_MID},
-    {"BSK_SPEED_FAST", Commands::BSK_SPEED_FAST}};
+std::map<String, Commands> COMMAND_MAP
+{
+  { "BSK_TURN_ON_OFF" , Commands::BSK_TURN_ON_OFF },
+  { "BSK_SLEEP"       , Commands::BSK_SLEEP       },
+  { "BSK_MODE_SUPPLY" , Commands::BSK_SUPPLY      },
+  { "BSK_MODE_EXTRACT", Commands::BSK_EXTRACT     },
+  { "BSK_RECOVERY"    , Commands::BSK_RECOVERY    },
+  { "BSK_SPEED_SLOW"  , Commands::BSK_SPEED_SLOW  },
+  { "BSK_SPEED_MID"   , Commands::BSK_SPEED_MID   },
+  { "BSK_SPEED_FAST"  , Commands::BSK_SPEED_FAST  }
+};
 
 //---------------------------------------------------------
 // Functions
@@ -45,30 +47,30 @@ std::map<String, Commands> commandMap = {
 
 String decode(String input)
 {
-    String decoded = "";
-    
-    for (int i = 0; i < input.length(); i++)
+  String decoded = "";
+
+  for (size_t i = 0; i < input.length(); i++)
+  {
+    char c = input[i];
+
+    if (c == '%' && i + 2 < input.length())
     {
-        char c = input[i];
-
-        if (c == '%' && i + 2 < input.length())
-        {
-            String hex = input.substring(i + 1, i + 3);
-            char decodedChar = (char) strtol(hex.c_str(), NULL, 16);
-            decoded += decodedChar;
-            i += 2;
-        }
-        else if (c == '+')
-        {
-            decoded += ' ';
-        }
-        else
-        {
-            decoded += c;
-        }
+      String hex = input.substring(i + 1, i + 3);
+      char decodedChar = (char)strtol(hex.c_str(), NULL, 16);
+      decoded += decodedChar;
+      i += 2;
     }
+    else if (c == '+')
+    {
+      decoded += ' ';
+    }
+    else
+    {
+      decoded += c;
+    }
+  }
 
-    return decoded;
+  return decoded;
 }
 
 } // anonymous namespace
@@ -116,7 +118,7 @@ void BskControl::connect()
     IPAddress gateway(192, 168, 1, 1);
     IPAddress subnet(255, 255, 255, 0);
 
-    WiFi.softAP(AP_SSID, AP_PASS);
+    WiFi.softAP(AP_SSID, AP_PASSWORD);
     WiFi.softAPConfig(localIp, gateway, subnet);
   }
   else
@@ -187,8 +189,8 @@ void BskControl::webUpdate()
         if (c == '\n')
         {
           command.trim();
-          auto it = commandMap.find(command);
-          if (it != commandMap.end())
+          auto it = COMMAND_MAP.find(command);
+          if (it != COMMAND_MAP.end())
           {
             m_irControl.sendCommand(it->second);
             client.println("OK");
@@ -220,7 +222,7 @@ void BskControl::servicePage()
   String request;
   while (client.available())
   {
-      request += (char)client.read();
+      request += static_cast<char>(client.read());
   }
 
   int ssidPos = request.indexOf("ssid=");
@@ -248,14 +250,14 @@ void BskControl::servicePage()
       {
         client.println(HEADER);
         client.println(PAGE_NOK);
-        client.println("");
+        client.stop();
         return;
       }
     }
 
     client.println(HEADER);
     client.println(PAGE_OK);
-    client.println("");
+    client.stop();
     return;
   }
 
@@ -265,8 +267,6 @@ void BskControl::servicePage()
 
   client.println(HEADER);
   client.print(page);
-  client.println("");
-  client.flush();
   client.stop();
 }
 //---------------------------------------------------------
@@ -288,11 +288,6 @@ void BskControl::handleDiscovery()
 
   if (strcmp(buffer, "BSK_DISCOVER") != 0)
     return;
-
-  // Serial.printf(
-  //     "Discovery request from %s:%d\n",
-  //      m_udp->remoteIP().toString().c_str(),
-  //      m_udp->remotePort());
 
   char response[128];
 
