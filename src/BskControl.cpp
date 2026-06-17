@@ -31,14 +31,20 @@ constexpr unsigned long STA_MODE_RECONNECT_MIN = 60000;
 
 std::map<String, Commands> COMMAND_MAP
 {
-  { "BSK_TURN_ON_OFF" , Commands::BSK_TURN_ON_OFF },
-  { "BSK_SLEEP"       , Commands::BSK_SLEEP       },
-  { "BSK_MODE_SUPPLY" , Commands::BSK_SUPPLY      },
-  { "BSK_MODE_EXTRACT", Commands::BSK_EXTRACT     },
-  { "BSK_RECOVERY"    , Commands::BSK_RECOVERY    },
-  { "BSK_SPEED_SLOW"  , Commands::BSK_SPEED_SLOW  },
-  { "BSK_SPEED_MID"   , Commands::BSK_SPEED_MID   },
-  { "BSK_SPEED_FAST"  , Commands::BSK_SPEED_FAST  }
+  { "BSK_TURN_ON_OFF"      , Commands::BSK_TURN_ON_OFF  },
+  { "BSK_SLEEP"            , Commands::BSK_SLEEP        },
+  { "BSK_MODE_SUPPLY"      , Commands::BSK_SUPPLY       },
+  { "BSK_MODE_SUPPLY_PERM" , Commands::BSK_SUPPLY_PERM  },
+  { "BSK_MODE_EXTRACT"     , Commands::BSK_EXTRACT      },
+  { "BSK_MODE_EXTRACT_PERM", Commands::BSK_EXTRACT_PERM },
+  { "BSK_RECOVERY"         , Commands::BSK_RECOVERY     },
+  { "BSK_SPEED_SLOW"       , Commands::BSK_SPEED_SLOW   },
+  { "BSK_SPEED_MID"        , Commands::BSK_SPEED_MID    },
+  { "BSK_SPEED_FAST"       , Commands::BSK_SPEED_FAST   },
+  { "BSK_HUMID_MIN"        , Commands::BSK_HUMID_MIN    },
+  { "BSK_HUMID_MID"        , Commands::BSK_HUMID_MID    },
+  { "BSK_HUMID_MAX"        , Commands::BSK_HUMID_MAX    },
+  { "BSK_HUMID_DSBL"       , Commands::BSK_HUMID_DSBL   }
 };
 
 //---------------------------------------------------------
@@ -141,7 +147,7 @@ void BskControl::connect()
 
     if(!m_connected)
     {
-      WiFi.disconnect();
+      WiFi.mode(WIFI_OFF);
     }
   }
 }
@@ -151,7 +157,7 @@ void BskControl::update()
   if (!m_firstLoopDone)
   {
     m_irControl.init();
-    m_irControl.sendCommand(bsk::Commands::BSK_NONE);
+    m_irControl.setCommand(bsk::Commands::BSK_NONE);
     connect();
     m_firstLoopDone = true;
   }
@@ -168,14 +174,15 @@ void BskControl::update()
   }
   else
   {
-    webUpdate();
+    handleTcpRequest();
     handleDiscovery();
+    m_irControl.checkStatus();
   }
 
   delay(Delay::NORMAL);
 }
 //---------------------------------------------------------
-void BskControl::webUpdate()
+void BskControl::handleTcpRequest()
 {
   WiFiClient client = m_server->accept();
   if (client)
@@ -192,7 +199,7 @@ void BskControl::webUpdate()
           auto it = COMMAND_MAP.find(command);
           if (it != COMMAND_MAP.end())
           {
-            m_irControl.sendCommand(it->second);
+            m_irControl.setCommand(it->second);
             client.println("OK");
           }
           else

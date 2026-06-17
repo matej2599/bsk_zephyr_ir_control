@@ -21,11 +21,18 @@ public:
     // Initialize IRControl
     void init();
 
-    // Send BSK command
-    void sendCommand(Commands cmd);
+    // Check and send command
+    void checkStatus();
 
+    // Prepare command for sending
+    void setCommand(Commands cmd);
+    
 private:
-    //IRsend irsend;
+    // Send BSK command
+    void sendCommandInternal();
+
+    bool m_commandSent = false;
+    Commands m_commandToSend = Commands::BSK_NONE;
 };
 
 } // bsk namespace

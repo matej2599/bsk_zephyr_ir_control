@@ -6,3 +6,23 @@ RECOVERY - Protocol=NEC Address=0x0, Command=0x11, Raw-Data=0xEE11FF00, 32 bits,
 SLOW - Protocol=NEC Address=0x0, Command=0x5, Raw-Data=0xFA05FF00, 32 bits, LSB first, Gap=3276750us, Duration=67700us
 MID - Protocol=NEC Address=0x0, Command=0x1E, Raw-Data=0xE11EFF00, 32 bits, LSB first, Gap=2310850us, Duration=67650us
 FAST - Protocol=NEC Address=0x0, Command=0x1B, Raw-Data=0xE41BFF00, 32 bits, LSB first, Gap=3276750us, Duration=67750us
+HUMIDITY MIN - Protocol=NEC Address=0x0, Command=0x17, Raw-Data=0xE817FF00, 32 bits, LSB first, Gap=3276750us, Duration=67750us
+HUMIDITY MID - Protocol=NEC Address=0x0, Command=0x1, Raw-Data=0xFE01FF00, 32 bits, LSB first, Gap=3276750us, Duration=67800us
+HUMIDITY MAX - Protocol=NEC Address=0x0, Command=0xD, Raw-Data=0xF20DFF00, 32 bits, LSB first, Gap=2710950us, Duration=67750us
+
+
+
+Protocol=NEC Address=0x0, Command=0xA, Raw-Data=0xF50AFF00, 32 bits, LSB first, Gap=3276750us, Duration=67800us
+Protocol=NEC Address=0x0, Command=0xA, Repeat, Gap=95250us, Duration=11750us
+Protocol=NEC Address=0x0, Command=0xA, Repeat, Gap=95250us, Duration=11750us
+Protocol=NEC Address=0x0, Command=0xA, Repeat, Gap=95250us, Duration=11750us
+Protocol=NEC Address=0x0, Command=0xA, Repeat, Gap=95200us, Duration=11750us
+Protocol=NEC Address=0x0, Command=0xA, Repeat, Gap=95250us, Duration=11750us
+Protocol=NEC Address=0x0, Command=0xA, Repeat, Gap=95200us, Duration=11800us
+Protocol=NEC Address=0x0, Command=0xA, Repeat, Gap=95150us, Duration=11800us
+Protocol=NEC Address=0x0, Command=0xA, Repeat, Gap=95150us, Duration=11800us
+Protocol=NEC Address=0x0, Command=0xA, Repeat, Gap=95150us, Duration=11800us
+Protocol=NEC Address=0x0, Command=0xA, Repeat, Gap=95200us, Duration=11750us
+Protocol=NEC Address=0x0, Command=0xA, Repeat, Gap=95200us, Duration=11750us
+Protocol=NEC Address=0x0, Command=0xA, Repeat, Gap=95200us, Duration=11750us
+Protocol=NEC Address=0x0, Command=0xA, Repeat, Gap=95200us, Duration=11800us

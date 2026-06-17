@@ -42,8 +42,8 @@ private:
     // Handle udp discovery
     void handleDiscovery();
 
-    // Provides interaction with user
-    void webUpdate();
+    // Handle tcp request
+    void handleTcpRequest();
 
     // Provides interaction with user in service mode
     void servicePage();

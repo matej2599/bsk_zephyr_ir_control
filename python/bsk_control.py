@@ -10,11 +10,17 @@ REPEAT_DISCOVERY_EVERY_SEC = 60
 BSK_COMMANDS = ["BSK_TURN_ON_OFF",
                 "BSK_SLEEP",
                 "BSK_MODE_SUPPLY",
+                "BSK_MODE_SUPPLY_PERM",
                 "BSK_MODE_EXTRACT",
+                "BSK_MODE_EXTRACT_PERM",
                 "BSK_RECOVERY",
                 "BSK_SPEED_SLOW",
                 "BSK_SPEED_MID",
-                "BSK_SPEED_FAST"]
+                "BSK_SPEED_FAST",
+                "BSK_HUMID_MIN",
+                "BSK_HUMID_MID",
+                "BSK_HUMID_MAX",
+                "BSK_HUMID_DSBL"]
 
 class BskControl:
     def __init__(self):
@@ -36,6 +42,7 @@ class BskControl:
                 self.discover()
             except Exception as e:
                 print("Discovery failed")
+                print(e)
 
             time.sleep(REPEAT_DISCOVERY_EVERY_SEC)
 
@@ -51,6 +58,7 @@ class BskControl:
             ("255.255.255.255", UDP_PORT)
         )
 
+        foundDevices = {}
         deadline = time.monotonic() + DISCOVERY_TIMEOUT_SEC
         while time.monotonic() < deadline:
             try:
@@ -64,13 +72,14 @@ class BskControl:
                 device_id = parts[1]
                 tcp_port = int(parts[2])
 
-                self.devices[device_id] = {
+                foundDevices[device_id] = {
                     "ip": addr[0],
                     "port": tcp_port
                 }
-
             except socket.timeout:
                 break
+
+        self.devices = foundDevices
         sock.close()
 
         print(f"Found {len(self.devices)}:")
