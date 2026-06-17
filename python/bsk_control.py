@@ -1,8 +1,11 @@
 import socket
 import time
+import threading
+
 PORT = 5000
 UDP_PORT = 12345
 DISCOVERY_TIMEOUT_SEC = 10
+REPEAT_DISCOVERY_EVERY_SEC = 60
 
 BSK_COMMANDS = ["BSK_TURN_ON_OFF",
                 "BSK_SLEEP",
@@ -16,6 +19,25 @@ BSK_COMMANDS = ["BSK_TURN_ON_OFF",
 class BskControl:
     def __init__(self):
         self.devices = {}
+        self.discovery_thread = None
+
+    def start_discovery(self):
+        if self.discovery_thread is None:
+            self.discovery_thread = threading.Thread(
+                target=self.discovery_worker,
+                daemon=True
+            )
+            self.discovery_thread.start()
+
+    def discovery_worker(self):
+        print("worker discovery running")
+        while True:
+            try:
+                self.discover()
+            except Exception as e:
+                print("Discovery failed")
+
+            time.sleep(REPEAT_DISCOVERY_EVERY_SEC)
 
     def discover(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -49,6 +71,7 @@ class BskControl:
 
             except socket.timeout:
                 break
+        sock.close()
 
         print(f"Found {len(self.devices)}:")
         for name, device in self.devices.items():
@@ -62,7 +85,7 @@ class BskControl:
                                                     command)
                 if result != "OK":
                     return result
-                return "OK";
+            return "OK";
         else:
             device = self.devices[device_id]
             return self.send_command_internal(device["ip"],
